@@ -1,5 +1,5 @@
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D, Concatenate, Input
+from keras.models import Model
+from keras.layers import Conv2D, MaxPooling2D, UpSampling2D, Concatenate, Input
 
 def conv_block(input_tensor, num_filters):
     x = Conv2D(num_filters, (3, 3), padding='same', activation='relu')(input_tensor)
