@@ -42,3 +42,33 @@ def build_model(input_height, input_width, num_channels):
     outputs = Conv2D(1, (1, 1), activation='linear')(conv9)
 
     return Model(inputs=inputs, outputs=outputs)
+
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Conv2D, UpSampling2D, Concatenate, Input
+from efficientnet.tfkeras import EfficientNetB0
+
+def build_efficientnet_model(input_height, input_width, num_channels):
+    inputs = Input(shape=(input_height, input_width, num_channels))
+
+    # Encoder (EfficientNet)
+    base_model = EfficientNetB0(weights='imagenet', include_top=False, input_tensor=inputs)
+    base_layers = [base_model.get_layer(name).output for name in ['block2a_expand_activation', 'block3a_expand_activation', 'block4a_expand_activation', 'block6a_expand_activation', 'top_activation']]
+    
+    # Decoder
+    up1 = Concatenate(axis=3)([UpSampling2D(size=(2, 2))(base_layers[4]), base_layers[3]])
+    conv1 = Conv2D(256, (3, 3), padding='same', activation='relu')(up1)
+
+    up2 = Concatenate(axis=3)([UpSampling2D(size=(2, 2))(conv1), base_layers[2]])
+    conv2 = Conv2D(128, (3, 3), padding='same', activation='relu')(up2)
+
+    up3 = Concatenate(axis=3)([UpSampling2D(size=(2, 2))(conv2), base_layers[1]])
+    conv3 = Conv2D(64, (3, 3), padding='same', activation='relu')(up3)
+
+    up4 = Concatenate(axis=3)([UpSampling2D(size=(2, 2))(conv3), base_layers[0]])
+    conv4 = Conv2D(32, (3, 3), padding='same', activation='relu')(up4)
+
+    # Output layer
+    outputs = Conv2D(1, (1, 1), activation='linear')(conv4)
+
+    return Model(inputs=inputs, outputs=outputs)

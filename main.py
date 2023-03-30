@@ -1,6 +1,6 @@
 from config import input_height, input_width, num_channels, batch_size, num_epochs
 from data_utils import load_data, preprocess_data
-from model import build_model
+from model import build_model, build_efficientnet_model
 from train import train_model
 
 def main():
@@ -10,8 +10,14 @@ def main():
     images, depth_maps = load_data(image_dir, depth_map_dir)
     train_images, val_images, train_depth_maps, val_depth_maps = preprocess_data(images, depth_maps, input_height, input_width)
 
+    # Save Baseline Model
     model = build_model(input_height, input_width, num_channels)
     train_model(model, train_images, train_depth_maps, val_images, val_depth_maps)
+
+    # Save Efficient Model
+    model = build_efficientnet_model(input_height, input_width, num_channels)
+    train_model(model, train_images, train_depth_maps, val_images, val_depth_maps)
+
 
     # Save the model for later use
     model.save('hand_depth_model.h5')
